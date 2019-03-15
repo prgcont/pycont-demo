@@ -9,9 +9,9 @@ from requests.auth import HTTPBasicAuth
 
 MY_NAMESPACE = "pycont"
 LATENCY_TRESHOLD_MS = 10
-PROM_USER = os.environ.get('PROMETHEUS_USERNAME', '')
-PROM_PASSWORD = os.environ.get('PROMETHEUS_PASSWORD', '')
-CURRENT_NAME = os.environ.get('CURRENT_NAME', 'pycont-operator')
+PROM_USER = os.environ.get("PROMETHEUS_USERNAME", "")
+PROM_PASSWORD = os.environ.get("PROMETHEUS_PASSWORD", "")
+CURRENT_NAME = os.environ.get("CURRENT_NAME", "pycont-operator")
 
 # cache for keeping track of last runs
 last_runs = {}
@@ -33,15 +33,15 @@ def create_deployment_skeleton(namespace, name, replicas):
     # Create and configurate a spec section
     template = client.V1PodTemplateSpec()
     # Create the specification of deployment
-    spec = client.AppsV1beta1DeploymentSpec(
-        replicas=replicas, template=template)
+    spec = client.AppsV1beta1DeploymentSpec(replicas=replicas, template=template)
 
     # Instantiate the deployment object
     deployment = client.AppsV1beta1Deployment(
         api_version="extensions/v1beta1",
         kind="Deployment",
         metadata=client.V1ObjectMeta(name=name),
-        spec=spec)
+        spec=spec,
+    )
 
     return deployment
 
@@ -50,18 +50,15 @@ def create_deployment_skeleton(namespace, name, replicas):
 def scale_deployment(namespace, name, replicas):
     r = replicas + 1
     d = create_deployment_skeleton(namespace, name, r)
-    d.metadata.labels = {
-        "last_scaling": datetime.now().isoformat().replace(":", "_")
-    }
-    print("Scaling deployment %s in namespace %s to %d replicas" %
-          (name, namespace, r))
+    d.metadata.labels = {"last_scaling": datetime.now().isoformat().replace(":", "_")}
+    print("Scaling deployment %s in namespace %s to %d replicas" % (name, namespace, r))
     apps_v1_beta.patch_namespaced_deployment_scale(
-        name=name, namespace=namespace, body=d)
+        name=name, namespace=namespace, body=d
+    )
 
 
 def should_scale(namespace, name, latency_treshold):
-    if in_cooldown(namespace, name) or check_latency(namespace, name,
-                                                     latency_treshold):
+    if in_cooldown(namespace, name) or check_latency(namespace, name, latency_treshold):
         return True
 
     return False
@@ -70,16 +67,16 @@ def should_scale(namespace, name, latency_treshold):
 def check_latency(namespace, name, latency_treshold):
     # TODO check latency for this app
     prom_url = "http://pyvo.prgcont.cz/prometheus/api/v1/query"
-    query_data = {'query': 'http_requests_total{job="kubernetes-node-kubelet", handler="prometheus"}[5m]'}
+    query_data = {
+        "query": 'http_requests_total{job="kubernetes-node-kubelet", handler="prometheus"}[5m]'
+    }
     r = requests.post(
-        prom_url,
-        data=query_data,
-        auth=HTTPBasicAuth(PROM_USER, PROM_PASSWORD))
+        prom_url, data=query_data, auth=HTTPBasicAuth(PROM_USER, PROM_PASSWORD)
+    )
     if r.ok:
         print(r.json())
     else:
-        print("Failed to query Prometheus, status code: {}".format(
-            r.status_code))
+        print("Failed to query Prometheus, status code: {}".format(r.status_code))
     return False
 
 
@@ -94,9 +91,7 @@ def in_cooldown(namespace, name):
         last_runs[key] = now
         return True
 
-    print(
-        "Cooldown: Deployment {} is in cooldown, should not be scaled".format(
-            key))
+    print("Cooldown: Deployment {} is in cooldown, should not be scaled".format(key))
     return False
 
 
