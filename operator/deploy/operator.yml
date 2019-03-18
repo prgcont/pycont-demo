@@ -23,9 +23,6 @@ spec:
       - image: prgcont/pycont-operator
         name: pycont-operator
         imagePullPolicy: Always
-        command:
-          - python
-          - /operator.py
         env:
           - name: CURRENT_NAMESPACE
             valueFrom:

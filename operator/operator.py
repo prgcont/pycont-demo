@@ -7,8 +7,8 @@ import requests
 import os
 from requests.auth import HTTPBasicAuth
 
-MY_NAMESPACE = "pycont"
 LATENCY_TRESHOLD_MS = 10
+MY_NAMESPACE = os.environ.get("CURRENT_NAMESPACE", "pycont")
 PROM_USER = os.environ.get("PROMETHEUS_USERNAME", "")
 PROM_PASSWORD = os.environ.get("PROMETHEUS_PASSWORD", "")
 CURRENT_NAME = os.environ.get("CURRENT_NAME", "pycont-operator")
