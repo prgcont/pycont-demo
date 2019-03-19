@@ -5,10 +5,6 @@ from prometheus_client import Histogram
 import time
 
 # Prometheus metrics
-REQUEST_COUNT = Counter(
-    'request_count',
-    'HTTP Request Count',
-    ['method', 'endpoint', 'http_status']
 )
 REQUEST_LATENCY = Histogram(
     'request_latency',
@@ -25,7 +21,6 @@ def record_request_data(response):
     resp_time = time.time() - request.start_time
 
     REQUEST_LATENCY.labels(request.method, request.path).observe(resp_time)
-    REQUEST_COUNT.labels(request.method, request.path, response.status_code).inc()
 
     return response
 

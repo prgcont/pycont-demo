@@ -3,8 +3,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kad
-  annotations:
-    prometheus.io/scrape: "true"
 spec:
   selector:
     app: kad
@@ -45,6 +43,8 @@ spec:
     metadata:
       labels:
         app: kad
+      annotations:
+        prometheus.io/scrape: "pod"
     spec:
       containers:
       - name: app
