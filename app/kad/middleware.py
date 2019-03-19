@@ -5,7 +5,6 @@ from prometheus_client import Histogram
 import time
 
 # Prometheus metrics
-)
 REQUEST_LATENCY = Histogram(
     'request_latency',
     'HTTP Request latency',

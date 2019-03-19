@@ -1,13 +1,21 @@
-import os
-import time
-import math
-
-from flask import Flask, render_template, make_response, request
+from .middleware import setup_metrics
+from flask import Flask
+from flask import make_response
+from flask import render_template
+from flask import request
+from logging.config import dictConfig
+from logging.handlers import RotatingFileHandler
+from prometheus_client import CollectorRegistry
+from prometheus_client import CONTENT_TYPE_LATEST
+from prometheus_client import generate_latest
+from prometheus_client import multiprocess
 from redis import Redis
 from redis.exceptions import ConnectionError
-from prometheus_client import generate_latest, CollectorRegistry, multiprocess, CONTENT_TYPE_LATEST
 
-from .middleware import setup_metrics
+import logging
+import math
+import os
+import time
 
 redis_server = os.environ.get('REDIS_SERVER', 'localhost')
 config_file = os.environ.get('CONFIG_FILE', '/etc/kad/config.yml')
@@ -85,6 +93,14 @@ def shutdown():
     shutdown_server()
     return 'Server shutting down...'
 
+@app.route('/action/fail')
+def fail():
+    raise Exception('Testing exception')
+
+    return ''
+    
+
+
 
 @app.route('/metrics')
 def metrics():
@@ -101,4 +117,7 @@ def metrics():
 
 
 def run():
+    # setup logging
+    logging.basicConfig(filename='/tmp/app.log', level=logging.DEBUG)
+
     app.run(host="0.0.0.0", debug=True)
