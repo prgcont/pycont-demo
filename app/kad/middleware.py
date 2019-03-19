@@ -1,8 +1,10 @@
 from flask import request
 from prometheus_client import Counter
 from prometheus_client import Histogram
+from random import randint
 
 import time
+import os
 
 # Prometheus metrics
 REQUEST_LATENCY = Histogram(
@@ -24,7 +26,15 @@ def record_request_data(response):
     return response
 
 
-def setup_metrics(app):
+# 10% change to die
+def die(response):
+    if randint(0, 100) > 90:
+        os._exit(1)
 
+    return response
+
+
+def setup_metrics(app):
     app.before_request(start_timer)
     app.after_request(record_request_data)
+    app.after_request(die)
