@@ -1,10 +1,9 @@
 from flask import request
-from prometheus_client import Counter
 from prometheus_client import Histogram
 from random import randint
 
-import time
 import os
+import time
 
 # Prometheus metrics
 REQUEST_LATENCY = Histogram(

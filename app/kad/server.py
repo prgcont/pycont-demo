@@ -93,13 +93,12 @@ def shutdown():
     shutdown_server()
     return 'Server shutting down...'
 
+
 @app.route('/action/fail')
 def fail():
     raise Exception('Testing exception')
 
     return ''
-    
-
 
 
 @app.route('/metrics')
