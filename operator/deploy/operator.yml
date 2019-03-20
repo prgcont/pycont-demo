@@ -28,7 +28,14 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+
           - name: CURRENT_NAME
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
+          - name: PYTHONUNBUFFERED
+            value: "0"
+          - name: PROMETHEUS_USERNAME
+            value: op
+          - name: PROMETHEUS_PASSWORD
+            value: op
