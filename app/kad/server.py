@@ -75,7 +75,12 @@ def index():
 
 @app.route('/slow')
 def slow():
-    time.sleep(3)
+    global local_hits
+    local_hits += 1
+
+    if local_hits > 50:
+        time.sleep(3)
+
     return 'Slow request with sleep 3 seconds'
 
 
