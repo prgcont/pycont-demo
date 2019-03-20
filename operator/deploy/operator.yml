@@ -35,3 +35,7 @@ spec:
                 fieldPath: metadata.name
           - name: PYTHONUNBUFFERED
             value: "0"
+          - name: PROMETHEUS_USERNAME
+            value: op
+          - name: PROMETHEUS_PASSWORD
+            value: op
