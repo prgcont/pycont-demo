@@ -12,7 +12,6 @@ REQUEST_LATENCY = Histogram(
     ['method', 'endpoint']
 )
 
-
 def start_timer():
     request.start_time = time.time()
 
@@ -25,15 +24,6 @@ def record_request_data(response):
     return response
 
 
-# 1% change to die
-def die(response):
-    if randint(0, 100) > 99:
-        os._exit(1)
-
-    return response
-
-
 def setup_metrics(app):
     app.before_request(start_timer)
     app.after_request(record_request_data)
-    app.after_request(die)
