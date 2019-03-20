@@ -48,7 +48,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: prgcont/pycont-app:0.1
+        image: prgcont/pycont-app:0.0
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
