@@ -25,9 +25,9 @@ def record_request_data(response):
     return response
 
 
-# 10% change to die
+# 1% change to die
 def die(response):
-    if randint(0, 100) > 90:
+    if randint(0, 100) > 99:
         os._exit(1)
 
     return response
