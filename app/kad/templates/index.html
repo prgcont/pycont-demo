@@ -1,0 +1,101 @@
+<html>
+<meta charset="utf-8">
+
+<head>
+<title>Kubernetes app demo</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<style>
+td {
+	font-size: 70%;
+}
+a {
+	font-weight: bold;
+}
+body {
+	padding: 10px
+}
+div.doc {
+	font-size: 90%;
+	background-color: #fafafa;
+	padding: 10px;
+	border-radius: 2px;
+	font-weight: 400;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<div class="row">
+
+<div class="col-sm-6">
+
+{% if hits %}
+<div class="alert alert-info">This worker returned page <strong>{{ hits }}</strong> times.</div>
+{% endif %}
+
+
+<div class="alert alert-info">Metrics exported at <a href="/metrics">/metrics</a></div>
+
+
+{% if redis_server %}
+<div class="alert alert-info">Redis server is <code>{{ redis_server }}</code></div>
+{% else %}
+<div class="alert alert-warning">Redis server not used, set <code>REDIS_SERVER</code> to use it.</div>
+{% endif %}
+
+{% if redis_error %}
+<div class="alert alert-danger">Redis connection failed: <code>{{ redis_error }}</code></div>
+{% endif %}
+
+{% if cmd %}
+<div class="alert alert-info">Started with command <code>{{ cmd }}</code></div>
+{% endif %}
+
+{% if conf_file_content %}
+<div class="alert alert-info">Config file content:<br><code><pre>{{ conf_file_content }}<pre></code></div>
+{% else %}
+<div class="alert alert-warning">Config file <code>{{ config_file }}</code> is empty.</code></div>
+{% endif %}
+
+<div class="doc">
+<b>Endpoints (port 5000):</b>
+<ul>
+	<li><a>/heavy</a> - do heavy computation</li>
+	<li><a>/slow</a> - wait 3 second before server reply</li>
+	<li><a>/check/live</a> - liveness probe, always OK</li>
+	<li><a>/check/ready</a> - readiness probo, ready if file <code>/tmp/notready</code> doesn't exist</li>
+	<li><a>/metrics</a> - <a href="https://prometheus.io/">Prometheus</a> metrics</li>
+	<li><a>/action/terminate</a> - Disable readiness probe, wait 15s and exit</li>
+	<li><a>/action/fail</a> - Throw exception</li>
+</ul>
+
+<p>
+Server is expecting configuration file <code>{{ config_file_path }}</code>. It will run without configuration but error mesage will be printed.
+</p>
+
+</div>
+
+
+
+</div>
+
+<div class="col-sm-6">
+<table class="table table-hover">
+<thead>
+<tr><th>Variable name</th><th>Value</th></tr>
+</thead>
+<tbody>
+{% for env_name, env in envs.items() %}
+<tr class=""><td>{{ env_name }}</td><td>{{ env }}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+</div> <!-- row -->
+</div> <!-- container -->
+
+</body>
+</html>
