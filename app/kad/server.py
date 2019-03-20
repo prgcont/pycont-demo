@@ -11,6 +11,7 @@ from prometheus_client import generate_latest
 from prometheus_client import multiprocess
 from redis import Redis
 from redis.exceptions import ConnectionError
+from random import randint
 
 import logging
 import math
@@ -26,6 +27,8 @@ notready_file = '/tmp/notready'
 app = Flask(__name__)
 setup_metrics(app)
 
+local_hits = 0
+
 
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
@@ -36,6 +39,9 @@ def shutdown_server():
 
 @app.route('/')
 def index():
+    global local_hits
+
+    local_hits += 1
     hits = None
     redis_error = ""
 
@@ -45,6 +51,12 @@ def index():
         redis_error = err
     else:
         hits = redis.get('hits').decode('utf8')
+
+    # start dying after 50 requests
+    if randint(0, 100) > 98 and local_hits > 50:
+        print('Something terrible happened on hit {}!'.format(local_hits))
+        os._exit(1)
+
 
     envs = os.environ
 
@@ -56,6 +68,7 @@ def index():
         'config_file_content': "",
         'redis_error': redis_error,
     }
+    
 
     return render_template('index.html', **template_params)
 
