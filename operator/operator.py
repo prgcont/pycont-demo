@@ -58,6 +58,9 @@ def scale_deployment(namespace, name, replicas):
     apps_v1_beta.patch_namespaced_deployment_scale(
         name=name, namespace=namespace, body=d
     )
+    key = "{}/{}".format(namespace, name)
+    now = datetime.utcnow()
+    last_runs[key] = now
 
 
 '''
@@ -130,11 +133,12 @@ def latency_rate_5m(namespace, name):
         print("latency_rate_5m: Incompatible result {} of query {}".format(o, query_data))
         return 0
 
-    val = int(results[0].get("value")[1])
+    val = float(results[0].get("value")[1])
     return val
 
 
 def in_cooldown(namespace, name):
+    global last_runs
     key = "{}/{}".format(namespace, name)
     now = datetime.utcnow()
     cooldown_limit = now - timedelta(seconds=60)
@@ -142,7 +146,6 @@ def in_cooldown(namespace, name):
 
     if (last is None) or (last < cooldown_limit):
         print("Cooldown: Deployment {} can be updated".format(key))
-        last_runs[key] = now
         return False
 
     print("Cooldown: Deployment {} is in cooldown, should not be scaled".format(key))
