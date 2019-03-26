@@ -1,3 +1,123 @@
-* PyCont Demo
+* Self Operated Python apps in Cloud native world
 
-Demo applications for Pyvo/Containers meetup.
+
+** About
+
+Vytvoření škálovatelné a jednoduše distribuovatelné Python aplikace, jež je automaticky spravována jinou Python aplikací.
+
+** Audience
+
+Vývojáři, nebo operations s malou, nebo žádnou znalostí kontejnerů.
+
+
+** Obsah
+***  Demo
+- Ukázat nasazenou běžící aplikaci
+- Update aplikace
+  - Update deployment konfigu, nebo CR?
+- Škálování aplikace
+  - Zatížit aplikaci
+  - Demonstrovat, že aplikace běží ve více instancích
+***  Insights
+
+Co chceme ukazovat publiku, nemůže to být moc do hlouky, musíme vybrat pár důležitých a srozumitelných bodů ohledně:
+- Kontajnerizování aplikace
+- Chování aplikace (co by měla aplikace umět a na co spoléhat)
+  - Signal handling/ukončování procesu
+  - Ukládání dat (mimo kontejner)
+  - Logování
+  - Exportování metrik
+- Správa aplikace v clusteru
+  - Ukázky kódu operátoru??
+  - Škálování podle metriky `request_latency`, další replika když > 100ms
+
+
+*** Komponenty
+- K8s cluster
+  - Ingress
+  - prometheus/traefik
+  - dashboard
+- Aplikace
+  - Jednoduche web UI, které ukazuje:
+  - Verzi
+  - Počet dotazů
+  - …
+- Operátor pro škálování aplikace
+  - Nastavení:
+    - min/max instancí
+    - Treshold latence v ms pro škálování
+  - Reconcile loop:
+    - Vylistuj deploymenty
+    - Zjisti pro ně latency 
+    - Pokud je vysoká a není v cooldown, tak uprav deployment count +1
+*** Příběh
+**** Postavy
+- Hipster 
+- Operations
+- Vypravěč
+**** Story
+- Vypravěč: Představit vývojáře
+- Hipster: 
+  - ukazuje jak je lehky zkontejnerizovat aplikaci (cetl o tom na blogu)
+    - Dockerfile, docker build, docker run
+  - Spuštění aplikace lokálně (1.0 je špatná verze)
+    #+begin_src bash 
+    docker build -t prgcont/pycont-app:0.0 .
+    docker push prgcont/pycont-app:0.0
+    docker run -d -p 6379:6379 redis
+    docker run --rm -ti --net host prgcont/pycont-app:0.0
+    #+end_src
+- Vypravěč: Představit operations
+- Operations: 
+  - Ukazuje jak aplikace běží (refreshuje browser) až do té doby než aplikace spadne
+- Hipster chce po adminovi aby aplikaci provozoval a restartoval manuálně, když spadne
+  - Ukáže u sebe lokálně jak to hezky běží
+- Admin ho (ne)zdvořile odmítne a pustí aplikaci v Kubernetes
+  - Deployment + ingress (deploy složka)
+  - ~kubectl create namespace pycont~
+  - ~kubectl apply -f deploy~
+
+- Aplikace bezi, stale pada
+- Hipster říká že /status by měl ukazovat co se děje
+- /status v browseru vrací 404 -> jdeme hledat do logu
+  #+begin_src 
+ 	kubectl logs -f deploy/kad
+	kubectl exec -ti kad-79665f49dc-4jp5s bash
+	tail -F /tmp/app.log
+  #+end_src
+  - Kouknout do logu a logy nikde -> spravit logovani
+  - ~app/kad/server.py:133~ smazat setup logging sekci
+- Precist logy a fixnout aplikaci 
+  - Hipster si stezuje, ze mu operations k8s zpomaluje re-deployment, docker kill/docker run je rychlesi… (trvá dlouho než se aplikace vypne)
+  - ~docker run --rm -ti --name app prgcont/pycont-app:0.0~
+  - ~docker exec -ti app bash~
+  - ~ps aux~
+  - ~time docker stop app~
+  - přidat exec před python to entrypoint.sh a taky do CMD
+  - opakovat předchozí commandy 
+- Zatizit aplikaci
+  - Aplikace se zpomaluje -> pridat metriky
+  - Ukázat grap z query zpoždění - ukazuje kolik requestů se vejde do 500ms
+  - while true; do curl pyvo.prgcont.cz/slow; done
+  - graf začně padat
+- Hipster navrhuje rucne skalovat aplikaci a ukazuje jak na to
+  - zastavit smyčku se slow
+  - ~kubectl scale deploy/kad --replicas=2~
+  - hipster dostane vynadano - chceme škálovat automaticky
+- Deploy operatoru, ktery bude skalovat aplikaci
+ 
+Potlesk, uklonit se…
+
+*** Vypravěč
+**** Představit vývojáře
+Nyní vám představuji XY. XY je typ moderního hipster vývojáře, který se zabývá nejnovějšími trendy a technologiemi. 
+Nyní se posilnil několika blog posty o výhodách Dockeru a jde tento novou a výhodami nabitou technologii (psali to na interenetu) předat svému kolegovi. 
+
+**** Představit operations
+O infrastrukturu a nasazování aplikací se stará Admin, proto se stává první obětí Hipsterovy přednášky. 
+Admin má ovšem s kontejnerizací bohaté zkušenosti a tak se zájmem sleduje jak si Hipster takovou kontejnerizaci představuje.
+
+**** Hipster odchazi na zachod 
+Hipster se odesel na zachod posilnit nekolika latest blog posty a za pomoci temnych sil 
+Stack Owerflow sepsat kubernetes operator, ktery dovoli jeho milemu operations kolegovi 
+uzit dlouhy a alerty neruseny spanek
