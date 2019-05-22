@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3-slim
 LABEL maintainer Tomas Kukral
 
 WORKDIR /code
@@ -6,5 +6,4 @@ WORKDIR /code
 COPY . app
 RUN pip install ./app
 
-CMD /code/app/entrypoint.sh
-
+CMD ["/code/app/entrypoint.sh"]
