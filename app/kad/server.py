@@ -134,7 +134,4 @@ def metrics():
 
 
 def run():
-    # setup logging
-    logging.basicConfig(filename='/tmp/app.log', level=logging.DEBUG)
-
     app.run(host="0.0.0.0", debug=True)

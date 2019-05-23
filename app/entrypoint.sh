@@ -2,4 +2,4 @@
 
 export prometheus_multiproc_dir="$(mktemp -d)"
 
-python -m kad
+exec python -m kad
